@@ -70,12 +70,30 @@ namespace GoldNumberClient
             IPEndPoint endpoint = new IPEndPoint(IPAddr, port);
             //client.ConnectCompleted += Handshake;
             //client.ReceiveCompleted += Play;  
-            client.Connect(endpoint);
+            try
+            {
+                client.Connect(endpoint);
+            }
+            catch
+            {
+                Console.WriteLine("Server did not run!");
+                Console.WriteLine("Press any key to exit");
+                Console.ReadKey();
+                return;
+            }
             client.init();
 
             string name, password;
-            name = Console.ReadLine().Trim();
-            password = Console.ReadLine().Trim();   // keyword not allow space char 
+            if (Environment.GetCommandLineArgs().Length > 3)
+            {
+                name = Environment.GetCommandLineArgs()[1];
+                password = Environment.GetCommandLineArgs()[2];
+            }
+            else
+            {
+                name = Console.ReadLine().Trim();
+                password = Console.ReadLine().Trim();   // keyword not allow space char 
+            }
             client.Login(name, password);
             
             long tick = DateTime.Now.Ticks; 
@@ -92,6 +110,7 @@ namespace GoldNumberClient
                     {
                         double cmt = ran.NextDouble() * 100;
                         client.Commit(cmt);
+                        Console.WriteLine("Commit number " + cmt.ToString("0.000") + "  to server");
                         string rslt = client.Receive();
                         Console.WriteLine(rslt);
                     }

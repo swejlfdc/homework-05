@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using SuperSocket.SocketBase;
 using SuperSocket.SocketBase.Config;
+using WebSocketTest;
 
 namespace GoldNumberServer
 {
@@ -11,10 +12,12 @@ namespace GoldNumberServer
     {
         protected UserModule UserManagement;
         public bool LoginPermission = true;
+        public WSServer DisplayServer;
         protected override bool Setup(IRootConfig rootConfig, IServerConfig config)
         {
            
             UserManagement = new UserModule("UserList.txt");
+            DisplayServer = new WSServer();
             return base.Setup(rootConfig, config);
         }
 

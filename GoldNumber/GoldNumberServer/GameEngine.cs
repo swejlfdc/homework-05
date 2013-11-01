@@ -8,6 +8,29 @@ using System.Threading;
 
 namespace GoldNumberServer
 {
+    class cmp1 : IComparer<Tuple<string, double>>
+    {
+        public int Compare(Tuple<string, double> a, Tuple<string, double> b)
+        {
+            if (a.Item2 < b.Item2) return 1;
+            if (a.Item2 > b.Item2) return -1;
+            return 0;
+        }
+    }
+    class cmp2 : IComparer<Tuple<string, int>>
+    {
+        public int Compare(Tuple<string, int> a, Tuple<string, int> b)
+        {
+            if (a.Item2 > b.Item2) return 1;
+            if (a.Item2 < b.Item2) return -1;
+            return 0;
+        }
+    }
+    class DisplayData {
+        public Double GoldNumber;
+        public List<Tuple<string, int>> SortedGrade = new List<Tuple<string,int>>();
+        public List<Tuple<string, int>> SortedRoundGrade = new List<Tuple<string,int>>();
+    }
     public partial class PlayServer : AppServer<ComSession>
     {
         public Dictionary<string, int> Grade;
@@ -43,25 +66,43 @@ namespace GoldNumberServer
                 foreach (ComSession session in this.GetAllSessions()) {
                     if (session.UserId != null && session.Commited)
                     {
-                        session.Send("INFO Commid end");
+                        session.Send("INFO Commit end");
                         CmmtNumber.Add(new Tuple<string, double>(session.UserId, session.CommitNumber));
                     }
                 }
                 engine.Play(CmmtNumber);
                 this.CurrentGoldNumber = engine.GoldNumber;
-                foreach (ComSession session in this.GetAllSessions())
+                DistributeGrade();
+                DisplayGrade();
+            }
+        }
+        private void DisplayGrade()
+        {
+            if (DisplayServer == null) return;
+            DisplayData data = new DisplayData();
+            data.GoldNumber = this.CurrentGoldNumber;
+            foreach(KeyValuePair<string ,int> pr in engine.Grade) {
+                data.SortedGrade.Add(new Tuple<string,int>(pr.Key, pr.Value));
+            }
+            foreach(KeyValuePair<string ,int> pr in engine.RoundGrade) {
+                data.SortedRoundGrade.Add(new Tuple<string, int>(pr.Key, pr.Value));
+            }
+            data.SortedRoundGrade.Sort(new cmp2());
+            data.SortedGrade.Sort(new cmp2());
+            DisplayServer.SendResult(data);
+        }
+        private void DistributeGrade() {
+            foreach (ComSession session in this.GetAllSessions())
+            {
+                if (session.UserId != null)
                 {
-                    if (session.UserId != null)
-                    {
-                        int Grd, CurGrd;
-                        Grd = engine.Grade[session.UserId];
-                        CurGrd = engine.RoundGrade[session.UserId];
-                        session.Send("RSLT {0} {1} {2}", CurGrd, Grd, this.CurrentGoldNumber.ToString("0.000"));
-                    }
+                    int Grd, CurGrd;
+                    Grd = engine.Grade[session.UserId];
+                    CurGrd = engine.RoundGrade[session.UserId];
+                    session.Send("RSLT {0} {1} {2}", CurGrd, Grd, this.CurrentGoldNumber.ToString("0.000"));
                 }
             }
         }
-        
         public void GameStart()
         {
             if (GameStarted)
@@ -88,21 +129,12 @@ namespace GoldNumberServer
     class GameEngine
     {
         public HashSet<string> Players;
-        public List<Tuple<string, double>>CommitedNumber = new List<Tuple<string,double>>();
+        public List<Tuple<string, double>>CommitedNumber;
         public Dictionary<string, int> Grade;
         public Dictionary<string, int> RoundGrade;
         public List<Tuple<string, int>> result;
         public Double GoldNumber;
         public delegate void GradeSetter(string name, int Grade);
-        class cmp : IComparer<Tuple<string, double>>
-        {
-            public int Compare(Tuple<string, double> a, Tuple<string, double> b)
-            {
-                if (a.Item2 < b.Item2) return 1;
-                if (a.Item2 > b.Item2) return -1;
-                return 0;
-            }
-        }
 
         public void Clear() {
             CommitedNumber.Clear();
@@ -136,7 +168,7 @@ namespace GoldNumberServer
             {
                 result.Add(new Tuple<string, double>(pr.Item1, Math.Abs(pr.Item2 - GoldNumber)));
             }
-            result.Sort(new cmp());
+            result.Sort(new cmp1());
             //need optimized
             foreach (string key in Players)
             {

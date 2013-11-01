@@ -7,6 +7,9 @@ using SuperSocket.SocketBase.Logging;
 using SuperSocket.SocketEngine;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography;
+#if TRACE
+using System.Diagnostics;
+#endif
 namespace GoldNumberServer
 {
     class Program
@@ -29,6 +32,9 @@ namespace GoldNumberServer
             }
 
             var result = bootstrap.Start();
+            var ws = bootstrap.GetServerByName("WSServer");
+            PlayServer Server = (bootstrap.GetServerByName("PlayServer") as PlayServer);
+            Server.DisplayServer = ws as WebSocketTest.WSServer;
 
             Console.WriteLine("Start result: {0}!", result);
 
@@ -53,7 +59,7 @@ namespace GoldNumberServer
                 str = str.Trim();
                 if (str == "start")
                 {   
-                    PlayServer Server = (bootstrap.GetServerByName("PlayServer") as PlayServer);
+                    //PlayServer Server = (bootstrap.GetServerByName("PlayServer") as PlayServer);
                     if (Server.GameStarted)
                     {
                         Console.WriteLine("Game has started");
@@ -67,7 +73,7 @@ namespace GoldNumberServer
                 if (str == "q") break;
                 if (str == "end")
                 {
-                    PlayServer Server = (bootstrap.GetServerByName("PlayServer") as PlayServer);
+                    //PlayServer Server = (bootstrap.GetServerByName("PlayServer") as PlayServer);
                     Server.GameEnd();
                 }
             }
