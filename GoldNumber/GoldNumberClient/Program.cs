@@ -84,7 +84,7 @@ namespace GoldNumberClient
             client.init();
 
             string name, password;
-            if (Environment.GetCommandLineArgs().Length > 3)
+            if (Environment.GetCommandLineArgs().Length >= 3)
             {
                 name = Environment.GetCommandLineArgs()[1];
                 password = Environment.GetCommandLineArgs()[2];

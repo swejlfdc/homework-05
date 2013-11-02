@@ -23,6 +23,7 @@ body{ margin:0; padding:0;font:12px/16px Verdana, Helvetica, Arial, sans-serif;}
         
         function DisplayGoldNumber(num) {
             console.log(num);
+			document.getElementById("goldNumber").innerHTML="<h1>"+num+"</h1>";
             random.append(new Date().getTime(), num );
         }
         function SetList(name, list) {
@@ -39,7 +40,7 @@ body{ margin:0; padding:0;font:12px/16px Verdana, Helvetica, Arial, sans-serif;}
               {
                  alert("WebSocket is supported by your Browser!");
                  // Let us open a web socket
-                 var ws = new WebSocket("ws://localhost:8086");
+                 var ws = new WebSocket("ws://192.168.1.108:8086");
                  ws.onopen = function()
                  {
                     // Web Socket is connected, send data using send()
@@ -103,7 +104,7 @@ body{ margin:0; padding:0;font:12px/16px Verdana, Helvetica, Arial, sans-serif;}
         <div>
             <canvas id="DisplayGoldNumberPic" width="400" height="100"></canvas>
         </div>
-        <div>
+        <div id="goldNumber">
             <h1> GoldNumber </h1>
         </div>
         </div>
