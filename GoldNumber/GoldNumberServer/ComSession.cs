@@ -16,7 +16,10 @@ namespace GoldNumberServer
 
         protected override void OnSessionStarted()
         {
-            this.Send("Welcome to SuperSocket Telnet Server");
+            this.Send("Welcome to GoldNumber game~");
+#if TRACE
+            Console.WriteLine(DateTime.Now.ToLongTimeString() + " " + this.Config.Ip.ToString() + " Connected");
+#endif
         }
 
         protected override void HandleUnknownRequest(StringRequestInfo requestInfo)

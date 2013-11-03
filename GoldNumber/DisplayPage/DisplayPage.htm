@@ -16,19 +16,22 @@ body{ margin:0; padding:0;font:12px/16px Verdana, Helvetica, Arial, sans-serif;}
       
       function createTimeline() {
         var chart = new SmoothieChart({maxValue:100,minValue:0});
+		var obj = document.getElementById("DisplayGoldNumberPic");
         chart.addTimeSeries(random, { strokeStyle: 'rgba(0, 255, 0, 1)', fillStyle: 'rgba(0, 255, 0, 0.2)', lineWidth: 4 });
-        chart.streamTo(document.getElementById("DisplayGoldNumberPic"), 500);
+        chart.streamTo(obj, 500);
+		obj.width=document.body.clientWidth;
       }
 
         
         function DisplayGoldNumber(num) {
             console.log(num);
-			document.getElementById("goldNumber").innerHTML="<h1>"+num+"</h1>";
+			document.getElementById("goldNumber").innerHTML="<h1> Current Gold Number :" + num+"</h1>";
             random.append(new Date().getTime(), num );
         }
         function SetList(name, list) {
             var obj = document.getElementById(name);
-            var str = "<table>";
+            var str = "<table width='500px' border=\"1px\" bordercolor=\"#000000\" cellspacing=\"0px\" style=\"border-collapse:collapse\">";
+			str += "<tr> <th width='50%'> UserName </td> <th width='50%'> Point </td> </tr>";
             for(var i = 0; i < list.length; ++i) {
                 str += "<tr> <td>" + list[i].Item1 + "</td><td>" + list[i].Item2 + "</td></tr>"
             }
@@ -40,7 +43,7 @@ body{ margin:0; padding:0;font:12px/16px Verdana, Helvetica, Arial, sans-serif;}
               {
                  alert("WebSocket is supported by your Browser!");
                  // Let us open a web socket
-                 var ws = new WebSocket("ws://192.168.1.108:8086");
+                 var ws = new WebSocket("ws://127.0.0.1:8086");
                  ws.onopen = function()
                  {
                     // Web Socket is connected, send data using send()
@@ -100,20 +103,22 @@ body{ margin:0; padding:0;font:12px/16px Verdana, Helvetica, Arial, sans-serif;}
 <body>  
 
 
-    <div>
+    <div style="margin: 0 auto;">
         <div>
-            <canvas id="DisplayGoldNumberPic" width="400" height="100"></canvas>
+			<h1>Dynamic Gold Number Variation Diagram</h1>
+            <canvas id="DisplayGoldNumberPic" width="500" height="100"></canvas>
         </div>
         <div id="goldNumber">
             <h1> GoldNumber </h1>
         </div>
         </div>
-
-            <span  style="width:px; float:left;">
+            <span  style="width:50%; float:left;">
+				<h3> Current Player Ranking!! </h3>
                             <div id="RoundGradeList"> <table><tbody><tr> <td>k</td><td>-1</td></tr><tr> <td>l</td><td>9</td></tr><tr> <td>j</td><td>10</td></tr></tbody></table>
                             </div>
             </span>
-            <span  style="width:px; float:left;">
+            <span  style="width:50%; float:left;">
+			<h3> Total Grade Board~~ </h3>
                             <div id="GradeList"><table><tbody><tr> <td>k</td><td>1</td></tr><tr> <td>l</td><td>9</td></tr><tr> <td>j</td><td>10</td></tr></tbody></table> 
                             </div>
             </span>

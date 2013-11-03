@@ -31,8 +31,11 @@ namespace GoldNumberServer
             password = requestInfo[1];
             if (Server.Login(name, password))
             {
-                session.Send("INFO login successfully");
                 session.UserId = name;
+#if TRACE
+                Console.WriteLine(DateTime.Now.ToLongTimeString() + " " + name + " login System from ip " + session.Config.Ip);
+#endif
+                session.Send("INFO login successfully");
             }
             else
             {

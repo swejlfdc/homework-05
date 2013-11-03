@@ -10,10 +10,17 @@ namespace GoldNumberServer
 {
     class cmp1 : IComparer<Tuple<string, double>>
     {
+        double num;
+        public cmp1(double GoldNumber) {
+            num = GoldNumber;
+        }
         public int Compare(Tuple<string, double> a, Tuple<string, double> b)
         {
-            if (a.Item2 < b.Item2) return 1;
-            if (a.Item2 > b.Item2) return -1;
+            double x, y;
+            x = Math.Abs(a.Item2 - num);
+            y = Math.Abs(b.Item2 - num);
+            if (x > y) return 1;
+            if (y < x) return -1;
             return 0;
         }
     }
@@ -21,8 +28,8 @@ namespace GoldNumberServer
     {
         public int Compare(Tuple<string, int> a, Tuple<string, int> b)
         {
-            if (a.Item2 > b.Item2) return 1;
-            if (a.Item2 < b.Item2) return -1;
+            if (a.Item2 < b.Item2) return 1;
+            if (a.Item2 > b.Item2) return -1;
             return 0;
         }
     }
@@ -132,7 +139,7 @@ namespace GoldNumberServer
         public List<Tuple<string, double>>CommitedNumber;
         public Dictionary<string, int> Grade;
         public Dictionary<string, int> RoundGrade;
-        public List<Tuple<string, int>> result;
+        public List<Tuple<string, double>> result;
         public Double GoldNumber;
         public delegate void GradeSetter(string name, int Grade);
 
@@ -152,23 +159,42 @@ namespace GoldNumberServer
                 RoundGrade[name] = 0;
             }
         }
-        public void Play(List<Tuple<string, double>> CmmtNumber) {
+        public void Play(List<Tuple<string, double>> CmmtNumber)
+        {
             double tmp = 0;
             CommitedNumber = CmmtNumber;
             foreach (Tuple<string, double> pr in CommitedNumber)
             {
-                if(Players.Contains(pr.Item1))
+                if (Players.Contains(pr.Item1))
                     tmp += pr.Item2;
             }
             tmp /= Players.Count;
             GoldNumber = tmp * 0.6180339887;
             // sort D-value
+            /*
             List<Tuple<string, double>> result = new List<Tuple<string, double>>(CmmtNumber.Count);
             foreach (Tuple<string, double> pr in CmmtNumber)
             {
                 result.Add(new Tuple<string, double>(pr.Item1, Math.Abs(pr.Item2 - GoldNumber)));
             }
-            result.Sort(new cmp1());
+             * // old code
+            */
+            result = new List<Tuple<string, double>>(CmmtNumber);
+            result.Sort(new cmp1(GoldNumber));
+            // Unique result  
+            {
+                HashSet<string> uni_set = new HashSet<string>();
+                List<Tuple<string, double>> uni_list = new List<Tuple<string, double>>((int)CmmtNumber.Count);
+                foreach (Tuple<string, double> item in result)
+                {
+                    if (uni_set.Contains(item.Item1) == false)
+                    {
+                        uni_list.Add(item);
+                        uni_set.Add(item.Item1);
+                    }
+                }
+                result = uni_list;
+            }
             //need optimized
             foreach (string key in Players)
             {
@@ -179,9 +205,9 @@ namespace GoldNumberServer
             foreach (Tuple<string, double> pr in result)
             {
                 RoundGrade[pr.Item1] = point;
-                if(point > 0) --point;
+                if (point > 0) --point;
             }
-            if(result.Count > 1)
+            if (result.Count > 1)
                 RoundGrade[result[result.Count - 1].Item1] = -1;
             foreach (KeyValuePair<string, int> item in RoundGrade)
             {

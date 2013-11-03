@@ -32,7 +32,6 @@ namespace GoldNumberServer
             base.OnStopped();
             UserManagement.Close(); // Write Back the user data
         }
-
         public bool Register(string name, string password)
         {
             return UserManagement.AddUser(name, password);
@@ -44,6 +43,9 @@ namespace GoldNumberServer
         public void Logout(string name)
         {
             UserManagement.Logout(name);
+#if TRACE
+            Console.WriteLine(DateTime.Now.ToLongTimeString() + " " + name + "log out");
+#endif
         }
     }
 }
