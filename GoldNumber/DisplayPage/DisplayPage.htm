@@ -17,7 +17,7 @@ body{ margin:0; padding:0;font:12px/16px Verdana, Helvetica, Arial, sans-serif;}
       function createTimeline() {
         var chart = new SmoothieChart({maxValue:100,minValue:0});
 		var obj = document.getElementById("DisplayGoldNumberPic");
-        chart.addTimeSeries(random, { strokeStyle: 'rgba(0, 255, 0, 1)', fillStyle: 'rgba(0, 255, 0, 0.2)', lineWidth: 4 });
+        chart.addTimeSeries(random, {  fillStyle: 'rgba(0, 255, 0, 0.2)', lineWidth: 2 });
         chart.streamTo(obj, 500);
 		obj.width=document.body.clientWidth;
       }
