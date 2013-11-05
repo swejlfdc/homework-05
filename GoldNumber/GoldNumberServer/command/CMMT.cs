@@ -18,6 +18,11 @@ namespace GoldNumberServer
                 session.Send("ERRO System Error");
                 return;
             }
+            if (session.UserId == null)
+            {
+                session.Send("ERRO User did not login");
+                return;
+            }
             if (Server.GameStarted == false)
             {
                 session.Send("ERRO Game have not start");
@@ -39,6 +44,7 @@ namespace GoldNumberServer
                 double tmp = Convert.ToDouble(requestInfo.Parameters[0]);
                 session.CommitNumber = tmp;
                 session.Commited = true;
+                session.Send("INFO Commit successfully");
             }
             catch
             {

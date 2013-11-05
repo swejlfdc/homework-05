@@ -17,7 +17,6 @@ namespace GoldNumberServer
         {
            
             UserManagement = new UserModule("UserList.txt");
-            DisplayServer = new WSServer();
             return base.Setup(rootConfig, config);
         }
 

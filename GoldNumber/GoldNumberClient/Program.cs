@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
 using System.IO;
-using Wodsoft.Net.Sockets;
 
 namespace GoldNumberClient
 {
@@ -15,9 +14,10 @@ namespace GoldNumberClient
         public GameClientException(string message) : base(message) {
         }
     }
-    public class GoldNumberClient: TcpClient  {
-        public GoldNumberClient()
+    public class PlayClient: TcpClient  {
+        public PlayClient()
         {
+            base.SendBufferSize = 4096;
         }
         private StreamReader reader;
         private StreamWriter writer;
@@ -47,8 +47,8 @@ namespace GoldNumberClient
             str += "\r\n";
             //byte[] data = System.Text.Encoding.ASCII.GetBytes(str);
             //this.Client.Send(data);
-            if (str.Length > MaxbufferSize)
-                throw new GameClientException("The Send Buffer Size is too big");
+            //if (str.Length > MaxbufferSize)
+            //    throw new GameClientException("The Send Buffer Size is too big");
             writer.Write(str);
             writer.Flush();
         }
@@ -119,7 +119,7 @@ namespace GoldNumberClient
         public static string ip = "127.0.0.1";
         static void Main(string[] args)
         {
-            GoldNumberClient client = new GoldNumberClient();
+            PlayClient client = new PlayClient();
             IPAddress IPAddr = IPAddress.Parse(ip);
             IPEndPoint endpoint = new IPEndPoint(IPAddr, port);
             //client.ConnectCompleted += Handshake;

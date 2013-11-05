@@ -34,6 +34,7 @@ namespace GoldNumberServer
             var result = bootstrap.Start();
             var ws = bootstrap.GetServerByName("WSServer");
             PlayServer Server = (bootstrap.GetServerByName("PlayServer") as PlayServer);
+      
             Server.DisplayServer = ws as WebSocketTest.WSServer;
 
             Console.WriteLine("Start result: {0}!", result);

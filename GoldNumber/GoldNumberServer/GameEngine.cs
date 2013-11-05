@@ -77,7 +77,7 @@ namespace GoldNumberServer
                         session.Send("INFO 1s left");
                     }
                 }
-                Thread.Sleep(200);//wait for 700ms
+                Thread.Sleep(700);//wait for 700ms
                 // Transfer data to engine
                 CommitPermision = false;
                 List<Tuple<string, double>> CmmtNumber = new List<Tuple<string, double>>();
