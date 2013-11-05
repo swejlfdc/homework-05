@@ -10,20 +10,36 @@ using Wodsoft.Net.Sockets;
 
 namespace GoldNumberClient
 {
-    public class MyClient : TcpClient  {
-        public MyClient() {
+    class GameClientException : Exception
+    {
+        public GameClientException(string message) : base(message) {
+        }
+    }
+    public class GoldNumberClient: TcpClient  {
+        public GoldNumberClient()
+        {
         }
         private StreamReader reader;
         private StreamWriter writer;
-            
+        private int MaxbufferSize = 0x40;
+        private int MaxKeywordSize = 18;
+        private int MaxUsernameSize = 18;
+        private string UserName = "";
+        private string ver = "1.0";
+        // Summary:
+        //     Gets or set a value that indicates whether auto receive the request after every command.
+        //     The received message will be printed on screen
+        public bool AutoHandShake = true;
         public void init() {
             if(this.Active) {
                 NetworkStream ns = GetStream();
                 reader = new StreamReader(ns, Encoding.ASCII, true);           
                 writer = new StreamWriter(ns, Encoding.ASCII, 1024 * 8);
-                Console.WriteLine(reader.ReadLine());
-                Send("nimas");
                 Receive();
+                Send("VRSN " + ver);
+                Receive();
+            } else {
+                throw new GameClientException("Connection did not establish");
             }
         }
         public void Send(string str)
@@ -31,41 +47,78 @@ namespace GoldNumberClient
             str += "\r\n";
             //byte[] data = System.Text.Encoding.ASCII.GetBytes(str);
             //this.Client.Send(data);
+            if (str.Length > MaxbufferSize)
+                throw new GameClientException("The Send Buffer Size is too big");
             writer.Write(str);
             writer.Flush();
         }
+        // Summary:
+        //     Return a new string message. If Socket has no transfered data, the method will block Thread.
         public string Receive()
         {
             return reader.ReadLine();
         }
+        // Summary:
+        //     Login the server with given username and password
         public void Login(string name, string password)
         {
+            if (name.Length > MaxUsernameSize)
+                throw new GameClientException("The size of username is too long");
+            if (password.Length > MaxKeywordSize)
+                throw new GameClientException("The size of keyword is too long");
             Send("LOGN " + name + " " + password);
-            Console.WriteLine(this.Receive());
+            if (AutoHandShake)
+                Console.WriteLine(Receive());
         }
+        // Summary:
+        //     Register user to server with given username and password
         public void Register(string name, string password) {
+            if (name.Length > MaxUsernameSize)
+                throw new GameClientException("The size of username is too long");
+            if (password.Length > MaxKeywordSize)
+                throw new GameClientException("The size of keyword is too long");
             Send("REGT " + name + " " + password);
-            Console.WriteLine(this.Receive());
+            if (AutoHandShake)
+                Console.WriteLine(Receive());
         }
+        // Summary:
+        //     Commit the an array of real number to game server. Every one cannot commit more than 5 numbers.
+        //     But regarding the server config, only finite number will be accepted.
         public void Commit(params double[] val)
         {
+            if(val.Length > 5) 
+                throw new GameClientException("Commit too many number to server");
             string str = "CMMT";
             foreach (double item in val)
             {
-                str += " " + item.ToString("0.0000");
+                str += " " + item.ToString("0.00000");
             }
             Send(str);
-            Console.WriteLine(this.Receive());
+            if (AutoHandShake)
+                Console.WriteLine(Receive());
         }
-
+        
+        // Summary:
+        //     Log out current user. This method currently will not throw exception.
+        public void Logout()
+        {
+            if (UserName != "")
+                Send("LGOT");
+            if(AutoHandShake)
+                Console.WriteLine(reader.ReadLine());
+        }
+        public void Exit()
+        {
+            Send("EXIT");
+        }
     }
-    class Program
+    static class Program
     {
         public static int port = 2020;
         public static string ip = "127.0.0.1";
         static void Main(string[] args)
         {
-            MyClient client = new MyClient();
+            GoldNumberClient client = new GoldNumberClient();
             IPAddress IPAddr = IPAddress.Parse(ip);
             IPEndPoint endpoint = new IPEndPoint(IPAddr, port);
             //client.ConnectCompleted += Handshake;
@@ -109,7 +162,8 @@ namespace GoldNumberClient
                     if (param[0] == "BEGN")
                     {
                         double cmt = ran.NextDouble() * 100;
-                        client.Commit(cmt);
+                        double cmt2 = ran.NextDouble() * 100;
+                        client.Commit(cmt, cmt2);
                         Console.WriteLine("Commit number " + cmt.ToString("0.000") + "  to server");
                         string rslt = client.Receive();
                         Console.WriteLine(rslt);
@@ -122,17 +176,5 @@ namespace GoldNumberClient
             }
             client.Close();
         }
-        //public static void Handshake(Object sender, TCPClientEventArgs e)
-        //{
-        //    MyClient client = sender as MyClient;
-        //    client.Send("Hello World");
-        //    Console.WriteLine(DateTime.Now.ToShortTimeString() + "Connect Server successfully");
-        //}
-        //public static void Play(Object sender, TCPClientEventArgs e)
-        //{
-        //    MyClient client = sender as MyClient;
-        //    string str = System.Text.Encoding.ASCII.GetString(e.Data);
-        //    Console.WriteLine(str);
-        //}
     }
 }

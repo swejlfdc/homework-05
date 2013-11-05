@@ -18,6 +18,11 @@ namespace GoldNumberServer
                 session.Send("ERRO System Error");
                 return;
             }
+            if (Server.GameStarted == false)
+            {
+                session.Send("ERRO Game have not start");
+                return;
+            }
             if (session.Commited == true)
             {
                 session.Send("ERRO Over Time");

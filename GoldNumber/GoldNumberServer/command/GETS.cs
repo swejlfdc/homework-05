@@ -13,7 +13,6 @@ namespace GoldNumberServer
         public override void ExecuteCommand(ComSession session, StringRequestInfo requestInfo)
         {
             
-
             session.Send(session.SessionID);
         }
     }

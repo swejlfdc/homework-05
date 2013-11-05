@@ -21,6 +21,7 @@ namespace GoldNumberServer
             else
             {
                 Server.Logout(session.UserId);
+                session.Send("INFO Log out completed");
                 session.UserId = null;
             }
         }
