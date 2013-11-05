@@ -35,7 +35,7 @@ namespace GoldNumberServer
             }
             try
             {
-                int ValidNumber = Math.Min(Server.CommitNumber, requestInfo.Parameters.Length);
+                int ValidNumber = Math.Min(Server.CommitAmount, requestInfo.Parameters.Length);
                 double tmp = Convert.ToDouble(requestInfo.Parameters[0]);
                 session.CommitNumber = tmp;
                 session.Commited = true;

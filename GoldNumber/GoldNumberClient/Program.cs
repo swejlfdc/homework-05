@@ -70,8 +70,9 @@ namespace GoldNumberClient
             if (AutoHandShake)
                 Console.WriteLine(Receive());
         }
-        // Summary:
+        // <Summary>
         //     Register user to server with given username and password
+        // </Summary>
         public void Register(string name, string password) {
             if (name.Length > MaxUsernameSize)
                 throw new GameClientException("The size of username is too long");

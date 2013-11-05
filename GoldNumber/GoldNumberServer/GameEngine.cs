@@ -49,7 +49,7 @@ namespace GoldNumberServer
         public bool GameStarted = false;
         public bool CommitPermision = false;
         public int Round = 0;
-        public int CommitNumber
+        public int CommitAmount
         {
             get;
             internal set;
@@ -59,7 +59,7 @@ namespace GoldNumberServer
         private void GameRun() {
             Round = 0;
             engine.Register(UserManagement.CurrentUserList.ToArray<string>());
-            CommitNumber = 1;
+            CommitAmount = 1;
             while (true)
             {
                 if (!GameStarted) break;
@@ -73,7 +73,7 @@ namespace GoldNumberServer
                     if (session.UserId != null)
                     {
                         session.Commited = false;
-                        session.Send("BEGN ROUND " + Round);
+                        session.Send("BEGN CMMTNUM " + CommitAmount + " ROUND " + Round);
                         session.Send("INFO 1s left");
                     }
                 }
