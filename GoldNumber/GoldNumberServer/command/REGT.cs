@@ -8,11 +8,14 @@ using SuperSocket.SocketBase.Protocol;
 
 namespace GoldNumberServer
 {
+    [GameCommandFilter]
     public class REGT : CommandBase<ComSession, StringRequestInfo>
     {
         public override void ExecuteCommand(ComSession session, StringRequestInfo requestInfo)
         {
             PlayServer Server = session.AppServer as PlayServer;
+            session.Send("ERRO not permit register");
+            session.Close();
             if (Server == null) session.Send("ERRO System Error");
             if (requestInfo.Parameters.Length < 2)
                 session.Send("ERRO Parameter imcomplete");

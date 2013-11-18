@@ -8,7 +8,7 @@ using System.IO;
 
 namespace GoldNumberServer
 {
-    class User
+    public class User
     {
         public User(string id)
         {
@@ -118,7 +118,13 @@ namespace GoldNumberServer
             {
                 return false;
             }
-            if (CurrentUserList.Contains(name)) return false;
+            if (CurrentUserList.Contains(name))
+            {
+#if TRACE 
+            Monitor.LogState(name + " has logon");
+#endif
+                return false;
+            }
             CurrentUserList.Add(name);
             return true;
         }

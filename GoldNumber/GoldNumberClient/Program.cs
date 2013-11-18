@@ -115,7 +115,7 @@ namespace GoldNumberClient
     }
     static class Program
     {
-        public static int port = 2020;
+        public static int port = 7022;
         public static string ip = "127.0.0.1";
         static void Main(string[] args)
         {
@@ -162,10 +162,10 @@ namespace GoldNumberClient
                     string[] param = str.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                     if (param[0] == "BEGN")
                     {
-                        double cmt = ran.NextDouble() * 100;
-                        double cmt2 = ran.NextDouble() * 100;
+                        double cmt = ran.NextDouble() * 99 + 1;
+                        double cmt2 = ran.NextDouble() * 99 + 1;
                         client.Commit(cmt, cmt2);
-                        Console.WriteLine("Commit number " + cmt.ToString("0.000") + "  to server");
+                        Console.WriteLine("Commit number " + cmt.ToString("0.000") + " " + cmt2.ToString("0.000") + "  to server");
                         string rslt = client.Receive();
                         Console.WriteLine(rslt);
                     }

@@ -5,6 +5,8 @@ using System.Text;
 using SuperSocket.SocketBase;
 using SuperSocket.SocketBase.Config;
 using System.Threading;
+using System.Runtime.Serialization;
+using System.Web.Script.Serialization;
 
 namespace GoldNumberServer
 {
@@ -47,6 +49,7 @@ namespace GoldNumberServer
         private GameEngine engine = new GameEngine();
         Thread GameThread;
         public bool GameStarted = false;
+        public bool GamePaused = false;
         public bool CommitPermision = false;
         public int Round = 0;
         public int CommitAmount
@@ -59,9 +62,15 @@ namespace GoldNumberServer
         private void GameRun() {
             Round = 0;
             engine.Register(UserManagement.CurrentUserList.ToArray<string>());
-            CommitAmount = 1;
+            CommitAmount = 2;// set commit number
             while (true)
             {
+            
+                while (GamePaused)
+                {
+                    if (!GameStarted) break;
+                    Thread.Sleep(1000);
+                }
                 if (!GameStarted) break;
                 ++Round;
 #if TRACE
@@ -72,12 +81,12 @@ namespace GoldNumberServer
                 {
                     if (session.UserId != null)
                     {
-                        session.Commited = false;
-                        session.Send("BEGN CMMTNUM " + CommitAmount + " ROUND " + Round);
+                        session.ResetPlayInfo();
+                        session.Send("BEGN " + CommitAmount + " CMMTNUM ROUND " + Round);
                         session.Send("INFO 1s left");
                     }
                 }
-                Thread.Sleep(700);//wait for 700ms
+                Thread.Sleep(1700);//wait for 700ms
                 // Transfer data to engine
                 CommitPermision = false;
                 List<Tuple<string, double>> CmmtNumber = new List<Tuple<string, double>>();
@@ -85,18 +94,22 @@ namespace GoldNumberServer
                     if (session.UserId != null && session.Commited)
                     {
                         session.Send("INFO Commit end");
-                        CmmtNumber.Add(new Tuple<string, double>(session.UserId, session.CommitNumber));
+                        foreach (double CommitNumber in session.CommitNumber)
+                        {
+                            CmmtNumber.Add(new Tuple<string, double>(session.UserId, CommitNumber));
+                        }
                     }
                 }
+                Console.WriteLine("Current commit number " + CmmtNumber.Count);
                 engine.Play(CmmtNumber);
                 this.CurrentGoldNumber = engine.GoldNumber;
                 DistributeGrade();
                 DisplayGrade();
+                Monitor.flush();
             }
         }
         private void DisplayGrade()
         {
-            if (DisplayServer == null) return;
             DisplayData data = new DisplayData();
             data.Round = this.Round;
             data.GoldNumber = this.CurrentGoldNumber;
@@ -109,10 +122,15 @@ namespace GoldNumberServer
             foreach (Tuple<string, double> tp in engine.result)
             {
                 data.result.Add(new Tuple<string, double>(tp.Item1, tp.Item2));
-            }            
+            }                        
             data.SortedRoundGrade.Sort(new cmp2());
             data.SortedGrade.Sort(new cmp2());
-            DisplayServer.SendResult(data);
+            string JsonData = Microsoft.JScript.Convert.ToString(data, true);
+            JavaScriptSerializer jss = new JavaScriptSerializer();
+            JsonData = jss.Serialize(data);
+            Monitor.LogGrade(JsonData);
+            if (DisplayServer == null) return;
+            DisplayServer.SendResult(JsonData);
         }
         private void DistributeGrade() {
             foreach (ComSession session in this.GetAllSessions())
@@ -122,21 +140,44 @@ namespace GoldNumberServer
                     int Grd, CurGrd;
                     Grd = engine.Grade[session.UserId];
                     CurGrd = engine.RoundGrade[session.UserId];
-                    session.Send("RSLT {0} {1} {2}", CurGrd, Grd, this.CurrentGoldNumber.ToString("0.000"));
+                    session.Send("RSLT {0} {1} {2}", CurGrd, Grd, this.CurrentGoldNumber.ToString("0.000000"));
                 }
             }
+            Thread.Sleep(500);
         }
+        public void Ready()
+        {
+            if (GameStarted)
+            {
+                return;
+            }
+            // Disconnect the session without user log in
+            int UnlogNumber = 0;
+            foreach (ComSession session in this.GetAllSessions())
+            {
+                if (session.UserId == null)
+                {
+                    session.Close();
+                    UnlogNumber++;
+                }
+            }
+#if TRACE
+            Monitor.Print("Disconnect " + UnlogNumber + " Unlog user");
+#endif
+        }
+
         public void GameStart()
         {
             if (GameStarted)
             {
                 return;
             }
-            else
-            {
-                GameStarted = true;
-            }
             this.LoginPermission = false;   // 游戏开始后不允许再登陆
+            this.ConnectPermission = false;     // after game start do not allow to connect
+            Ready();
+            GameStarted = true;
+            GamePaused = false;
+            Distribute.Stop(); // stop distribute server
             Round = 0;
             Grade = new Dictionary<string,int>();
             RoundGrade = new Dictionary<string,int>();
@@ -146,7 +187,17 @@ namespace GoldNumberServer
         public void GameEnd()
         {
             GameStarted = false;
+            Distribute.Start(); // Restart distribute server
             LoginPermission = true;
+            this.ConnectPermission = true;
+        }
+        public void GamePause()
+        {
+            GamePaused = true;
+        }
+        public void GameResume()
+        {
+            GamePaused = false;
         }
     }
     class GameEngine
@@ -199,13 +250,14 @@ namespace GoldNumberServer
         {
             double tmp = 0;
             CommitedNumber = CmmtNumber;
-
+            GoldNumber = 0;
             foreach (Tuple<string, double> pr in CommitedNumber)
             {
                 if (Players.Contains(pr.Item1))
                     tmp += pr.Item2;
             }
-            tmp /= Players.Count;
+            if(CommitedNumber.Count > 0)
+            tmp /= CommitedNumber.Count;
             GoldNumber = tmp * 0.6180339887;
             // sort D-value
             /*
@@ -236,20 +288,42 @@ namespace GoldNumberServer
             //need optimized
             foreach (string key in Players)
             {
-                RoundGrade[key] = -10;
+                RoundGrade[key] = -5;
             }
-
-            int point = 10;
-            foreach (Tuple<string, double> pr in result)
+            // calculate score 
+            if (result.Count > 0)
             {
-                RoundGrade[pr.Item1] = point;
-                if (point > 0) --point;
-            }
-            if (result.Count > 1)
-                RoundGrade[result[result.Count - 1].Item1] = -1;
-            foreach (KeyValuePair<string, int> item in RoundGrade)
-            {
-                Grade[item.Key] += item.Value;
+                foreach (Tuple<string, double> pr in result)
+                {
+                    RoundGrade[pr.Item1] = 0;
+                }
+                double lastCommitNumber = result[result.Count - 1].Item2;
+                for (int i = result.Count - 1; i >= 0; i--)
+                {
+                    Tuple<string, double> pr = result[i];
+                    if (pr.Item2 == lastCommitNumber)
+                    {
+                        RoundGrade[pr.Item1] = -1;
+                    }
+                    else { break; }
+                }
+                lastCommitNumber = result[0].Item2;
+                for (int i = 0; i < result.Count; ++i)
+                {
+                    Tuple<string, double> pr = result[i];
+                    if (pr.Item2 == lastCommitNumber)
+                    {
+                        RoundGrade[pr.Item1] = 10;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                foreach (KeyValuePair<string, int> item in RoundGrade)
+                {
+                    Grade[item.Key] += item.Value;
+                }
             }
         }
 

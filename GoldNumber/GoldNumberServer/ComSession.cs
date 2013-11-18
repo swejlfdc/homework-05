@@ -12,13 +12,21 @@ namespace GoldNumberServer
         public string UserId;
         public bool Joined;
         public bool Commited;
-        public double CommitNumber;
+        public double[] CommitNumber;
+        public DateTime lastTime = DateTime.Now;
+        public UInt32 LastRecieveDataLength = 0;
 
+        public void ResetPlayInfo()
+        {
+            PlayServer server = this.AppServer as PlayServer;
+            Commited = false;
+            //CommitNumber = new double[server.CommitAmount];
+        }
         protected override void OnSessionStarted()
         {
             this.Send("Welcome to GoldNumber game~");
 #if TRACE
-            Console.WriteLine(DateTime.Now.ToLongTimeString() + " " + this.Config.Ip.ToString() + " Connected");
+            Monitor.Print(this.RemoteEndPoint.Address.ToString() + " try Connect");
 #endif
         }
 
@@ -32,10 +40,14 @@ namespace GoldNumberServer
             this.Send("Application error: {0}", e.Message);
         }
 
+
         protected override void OnSessionClosed(CloseReason reason)
         {
-            base.OnSessionClosed(reason);
             if (UserId != null) (AppServer as PlayServer).Logout(UserId);
+            base.OnSessionClosed(reason);
+#if TRACE
+            Monitor.Print(this.RemoteEndPoint.Address.ToString() + " Disconnected");
+#endif
         }
     }
 }

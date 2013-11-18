@@ -28,13 +28,18 @@ body{ margin:0; padding:0;font:12px/16px Verdana, Helvetica, Arial, sans-serif;}
 			document.getElementById("goldNumber").innerHTML="<h1> Current Gold Number :" + num+"</h1>";
             random.append(new Date().getTime(), num );
         }
-        function SetList(name, list, flag) {
+        function SetList(name, list, list2) {
             var obj = document.getElementById(name);
             var str;
 			str = "<table width='500px' border=\"1px\" bordercolor=\"#000000\" cellspacing=\"0px\" style=\"border-collapse:collapse\">";
-			str += "<tr> <th width='50%'> UserName </td> <th width='50%'> Point </td> </tr>";
+			str += "<tr> <th width='30%'> UserName </td> <th width='30%'> CommitNumber </td><td width ='30%'>Point </td> </tr>";
             for(var i = 0; i < list.length; ++i) {
-                str += "<tr> <td>" + list[i].Item1 + "</td><td>" + list[i].Item2 + "</td></tr>"
+                str += "<tr> <td>" + list[i].Item1 + "</td><td>" + list[i].Item2;
+				if(list2 == null) {
+				str +="</td></tr>"
+				} else {
+				 str += "</td><td>" + list2[i].Item2 + "</td></tr>";
+				}
             }
             str += "</table>";
             obj.innerHTML = str;
@@ -59,8 +64,8 @@ body{ margin:0; padding:0;font:12px/16px Verdana, Helvetica, Arial, sans-serif;}
                     console.log(evt.data);
                     var obj = eval("(" + evt.data + ")");
                     //console.log(obj.length);     
-                    SetList("RoundGradeList", obj.result);
-                    SetList("GradeList", obj.SortedGrade);
+                    SetList("RoundGradeList", obj.result, obj.SortedRoundGrade);
+                    SetList("GradeList", obj.SortedGrade, null);
                     DisplayGoldNumber(obj.GoldNumber);  
                     //document.getElementById("GoldNumberPic").innerHTML += obj[1].Item1;
                     //document.getElementById("GoldNumberPic").innerHTML += obj.test.nimei + "";

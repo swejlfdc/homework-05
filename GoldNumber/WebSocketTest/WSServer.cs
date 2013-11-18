@@ -13,11 +13,22 @@ namespace WebSocketTest
     {
         public WSServer()
         {
+            this.NewDataReceived +=WSServer_NewDataReceived;
         }
-        public void SendResult(Object obj)
+        void WSServer_NewDataReceived(JsonWebSocketSession session, byte[] data)
+        {
+            session.Close();
+        }
+        public void SendResult(string obj)
         {
             foreach(JsonWebSocketSession session in this.GetAllSessions()) {
-                session.SendJsonMessage("", obj);
+                try
+                {
+                    session.Send(obj);
+                } catch
+                {
+                    session.Close();
+                }
             }
         }
     }

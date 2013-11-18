@@ -33,9 +33,11 @@ namespace GoldNumberServer
 
             var result = bootstrap.Start();
             var ws = bootstrap.GetServerByName("WSServer");
+            var ds = bootstrap.GetServerByName("DistributeServer");
             PlayServer Server = (bootstrap.GetServerByName("PlayServer") as PlayServer);
-      
+            // connect the server
             Server.DisplayServer = ws as WebSocketTest.WSServer;
+            Server.Distribute = ds as DistributeServer;
 
             Console.WriteLine("Start result: {0}!", result);
 
@@ -71,13 +73,26 @@ namespace GoldNumberServer
                         Console.WriteLine("Game Start!");
                     }
                 }
-                if (str == "q") break;
-                if (str == "end")
+
+                switch (str)
                 {
-                    //PlayServer Server = (bootstrap.GetServerByName("PlayServer") as PlayServer);
-                    Server.GameEnd();
+                    case "clearIpSec":
+                        Server.IPFilter.Clear(); break;
+                    case "pause":
+                        Server.GamePause(); break;
+                    case  "resume":
+                        Server.GameResume(); break;
+                    case "end" :
+                        Server.GameEnd(); break;
+                    case "show" :
+                        Console.WriteLine("Current Session Number: {0}", Server.SessionCount);
+                        Server.PrintPlayers();
+                        Console.WriteLine("Current WebSession NUmber: {0}", ws.SessionCount);
+                        break;
                 }
+                if (str == "q") break;
             }
+            Monitor.flush();
             Console.WriteLine();
 
             //Stop the appServer

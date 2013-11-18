@@ -8,6 +8,7 @@ using SuperSocket.SocketBase.Protocol;
 
 namespace GoldNumberServer
 {
+    [GameCommandFilter]
     public class LOGN : CommandBase<ComSession, StringRequestInfo>
     {
         public override void ExecuteCommand(ComSession session, StringRequestInfo requestInfo)
@@ -33,12 +34,14 @@ namespace GoldNumberServer
             {
                 session.UserId = name;
 #if TRACE
-                Console.WriteLine(DateTime.Now.ToLongTimeString() + " " + name + " login System from ip " + session.Config.Ip);
+                Monitor.Print(name + " login System from ip " + session.RemoteEndPoint.Address.ToString());
+                Monitor.LogCommit(requestInfo.Key + " " + requestInfo.Body);
 #endif
                 session.Send("INFO login successfully");
             }
             else
             {
+                Monitor.Print("Entiy from ip " + session.RemoteEndPoint.Address + " try to login with name " + name + " Failed");
                 session.Send("ERRO login fail");
             }
         }

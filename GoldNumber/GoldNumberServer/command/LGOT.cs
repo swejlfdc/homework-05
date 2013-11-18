@@ -8,6 +8,7 @@ using SuperSocket.SocketBase.Protocol;
 
 namespace GoldNumberServer
 {
+    [GameCommandFilter]
     public class LGOT : CommandBase<ComSession, StringRequestInfo>
     {
         public override void ExecuteCommand(ComSession session, StringRequestInfo requestInfo)
