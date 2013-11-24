@@ -84,9 +84,12 @@ namespace GoldNumberServer
         }
         public void PrintPlayers()
         {
-            foreach (var player in UserManagement.CurrentUserList)
+            foreach (var session in this.GetAllSessions())
             {
-                Console.WriteLine(player);
+                if (session.UserId != null)
+                {
+                    Console.WriteLine("{0} ip:{1} port:{2}", session.UserId, session.RemoteEndPoint.Address.ToString(), session.LocalEndPoint.Port);
+                }
             }
         }
         public void Logout(string name)

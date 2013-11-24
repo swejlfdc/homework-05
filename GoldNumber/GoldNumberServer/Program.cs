@@ -89,6 +89,11 @@ namespace GoldNumberServer
                         Server.PrintPlayers();
                         Console.WriteLine("Current WebSession NUmber: {0}", ws.SessionCount);
                         break;
+                    case "clear":
+                        foreach(var session in Server.GetAllSessions()) {
+                            session.Close();
+                        }
+                        break;
                 }
                 if (str == "q") break;
             }

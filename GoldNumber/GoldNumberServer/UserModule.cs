@@ -49,12 +49,24 @@ namespace GoldNumberServer
             return NameSet.Contains(name);
         }
         public bool Confirm(string name, string password) {
-            if (Contains(name) == false)
+            if (Contains(name) == false) {
+#if TRACE
+            Monitor.Print("user " + name + " don't exists");
+#endif
                 return false;
+            }
             string uid = NameSet[name] as string;
             User user = this[uid];
             string HashKey = CalculateMD5Hash(password);
-            return (HashKey == user.HashKey);
+            if(HashKey == user.HashKey){
+                return true;
+            } else {
+#if TRACE
+                Monitor.Print("user " + name + " login with wrong keword");
+#endif
+                return false;
+            }
+            return false;
         }
         public string GetUid(string name) {
             return NameSet[name] as string;
@@ -121,7 +133,7 @@ namespace GoldNumberServer
             if (CurrentUserList.Contains(name))
             {
 #if TRACE 
-            Monitor.LogState(name + " has logon");
+            Monitor.Print(name + " has logon");
 #endif
                 return false;
             }
